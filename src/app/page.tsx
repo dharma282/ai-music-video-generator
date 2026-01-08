@@ -8,8 +8,13 @@ import SpectrumVisualizer from '@/components/SpectrumVisualizer';
 import WaveformVisualizer from '@/components/WaveformVisualizer';
 import BeatIndicator from '@/components/BeatIndicator';
 import AudioStats from '@/components/AudioStats';
+import StyleSelector from '@/components/StyleSelector';
+import VideoGenerator from '@/components/VideoGenerator';
+import VideoPreview from '@/components/VideoPreview';
 import { AudioAnalyzer } from '@/lib/audioAnalyzer';
+import { VideoGenerator as VideoGeneratorClass } from '@/lib/videoGenerator';
 import { UploadedFile, AudioAnalyzerData } from '@/types/audio';
+import { EncodedVideoData, VideoStyle } from '@/types/video';
 
 export default function Home() {
   const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
@@ -18,6 +23,9 @@ export default function Home() {
   const [bpm, setBpm] = useState(0);
   const analyzerRef = useRef<AudioAnalyzer | null>(null);
   const animationFrameRef = useRef<number>();
+  const [selectedStyle, setSelectedStyle] = useState<VideoStyle | null>(null);
+  const [autoGenerate, setAutoGenerate] = useState(false);
+  const [generatedVideo, setGeneratedVideo] = useState<EncodedVideoData | null>(null);
 
   const handleFileUpload = useCallback((file: UploadedFile) => {
     if (uploadedFile?.url) {
@@ -101,6 +109,30 @@ export default function Home() {
 
               <AudioStats analyzerData={analyzerData} bpm={bpm} />
 
+              {generatedVideo ? (
+                <div className="space-y-6">
+                  <VideoPreview videoData={generatedVideo} />
+                </div>
+              ) : (
+                <>
+                  <StyleSelector
+                    selectedStyle={selectedStyle}
+                    onStyleChange={setSelectedStyle}
+                    autoGenerate={autoGenerate}
+                    onAutoGenerateChange={setAutoGenerate}
+                  />
+                  
+                  <VideoGenerator
+                    uploadedFile={uploadedFile?.file || null}
+                    audioDuration={uploadedFile?.duration || 0}
+                    audioUrl={uploadedFile?.url || ''}
+                    selectedStyle={selectedStyle}
+                    autoGenerate={autoGenerate}
+                    onGenerationComplete={setGeneratedVideo}
+                  />
+                </>
+              )}
+
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <SpectrumVisualizer
                   analyzerData={analyzerData}
@@ -122,26 +154,6 @@ export default function Home() {
                     height={400}
                   />
                 </div>
-              </div>
-
-              <div className="flex justify-center">
-                <button
-                  onClick={() => {
-                    if (uploadedFile.url) {
-                      URL.revokeObjectURL(uploadedFile.url);
-                    }
-                    setUploadedFile(null);
-                    setAnalyzerData(null);
-                    setBpm(0);
-                    if (analyzerRef.current) {
-                      analyzerRef.current.disconnect();
-                      analyzerRef.current = null;
-                    }
-                  }}
-                  className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg transition-colors"
-                >
-                  Upload New File
-                </button>
               </div>
             </>
           )}
