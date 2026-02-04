@@ -36,3 +36,54 @@ export interface BeatDetection {
   strength: number;
   bpm: number;
 }
+
+export enum VideoStyle {
+  PARTICLE_SYSTEM = 'particle-system',
+  GEOMETRIC_PATTERNS = 'geometric-patterns',
+  WAVEFORM_ANIMATION = 'waveform-animation',
+  GRADIENT_FLOW = 'gradient-flow',
+  SPECTRUM_3D = 'spectrum-3d',
+  AUTO_GENERATE = 'auto-generate'
+}
+
+export interface VideoGenerationOptions {
+  audioFile: File;
+  audioDuration: number;
+  style: VideoStyle;
+  resolution: {
+    width: number;
+    height: number;
+  };
+  frameRate: number;
+  bitrate: number;
+}
+
+export interface VideoMetadata {
+  duration: number;
+  width: number;
+  height: number;
+  frameRate: number;
+  bitrate: number;
+  fileSize: number;
+  codec: string;
+  style: VideoStyle;
+  generatedAt: Date;
+}
+
+export interface FrameRenderConfig {
+  width: number;
+  height: number;
+  frameIndex: number;
+  totalFrames: number;
+  audioData: AudioAnalyzerData;
+  style: VideoStyle;
+}
+
+export interface GenerationProgress {
+  currentFrame: number;
+  totalFrames: number;
+  percentage: number;
+  currentStage: 'analyzing' | 'rendering' | 'encoding';
+  estimatedTimeRemaining: number;
+  startTime: number;
+}
